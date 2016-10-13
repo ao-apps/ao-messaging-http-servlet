@@ -90,11 +90,11 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 							<configuration>
 								<links>
 									<link>http://docs.oracle.com/javaee/6/api/</link>
-									<link>https://www.aoindustries.com/docs/ao-concurrent/</link>
+									<link>https://www.aoindustries.com/ao-concurrent/apidocs/</link>
 									<link>https://www.aoindustries.com/ao-messaging/api/apidocs/</link>
 									<link>https://www.aoindustries.com/ao-messaging/base/apidocs/</link>
 									<link>https://www.aoindustries.com/ao-messaging/http/apidocs/</link>
-									<link>https://www.aoindustries.com/docs/aocode-public/</link>
+									<link>https://www.aoindustries.com/aocode-public/apidocs/</link>
 								</links>
 							</configuration>
 						</plugin>
