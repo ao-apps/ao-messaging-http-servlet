@@ -89,7 +89,7 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 							<artifactId>maven-javadoc-plugin</artifactId>
 							<configuration>
 								<links>
-									<link>http://docs.oracle.com/javaee/6/api/</link>
+									<link>https://docs.oracle.com/javaee/6/api/</link>
 									<link>https://www.aoindustries.com/ao-concurrent/apidocs/</link>
 									<link>https://www.aoindustries.com/ao-messaging/api/apidocs/</link>
 									<link>https://www.aoindustries.com/ao-messaging/base/apidocs/</link>
