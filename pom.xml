@@ -44,7 +44,7 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 	</properties>
 
 	<name>AO Messaging HTTP Servlet</name>
-	<url>${project.parent.url}http/servlet/</url>
+	<url>https://www.aoindustries.com${bookPath}/</url><!-- Can't inherit due to multi-module -->
 	<description>Servlet-based server for asynchronous bidirectional messaging over HTTP.</description>
 	<inceptionYear>2014</inceptionYear>
 
