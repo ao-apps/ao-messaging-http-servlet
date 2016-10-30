@@ -3,6 +3,7 @@ Servlet-based server for asynchronous bidirectional messaging over HTTP.
 
 ## Project Links
 * [Project Home](https://www.aoindustries.com/ao-messaging/http/servlet/)
+* [Changelog](https://www.aoindustries.com/ao-messaging/http/servlet/changelog)
 * [API Docs](https://www.aoindustries.com/ao-messaging/http/servlet/apidocs/)
 * [Maven Central Repository](https://search.maven.org/#search%7Cgav%7C1%7Cg:%22com.aoindustries%22%20AND%20a:%22ao-messaging-http-servlet%22)
 * [GitHub](https://github.com/aoindustries/ao-messaging-http-servlet)
