@@ -44,7 +44,7 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 	</properties>
 
 	<name>AO Messaging HTTP Servlet</name>
-	<url>https://www.aoindustries.com${bookPath}/</url><!-- Can't inherit due to multi-module -->
+	<url>https://aoindustries.com${bookPath}/</url><!-- Can't inherit due to multi-module -->
 	<description>Servlet-based server for asynchronous bidirectional messaging over HTTP.</description>
 	<inceptionYear>2014</inceptionYear>
 
@@ -68,11 +68,11 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 							<configuration>
 								<links>
 									<link>https://docs.oracle.com/javaee/6/api/</link>
-									<link>https://www.aoindustries.com/ao-concurrent/apidocs/</link>
-									<link>https://www.aoindustries.com/ao-messaging/api/apidocs/</link>
-									<link>https://www.aoindustries.com/ao-messaging/base/apidocs/</link>
-									<link>https://www.aoindustries.com/ao-messaging/http/apidocs/</link>
-									<link>https://www.aoindustries.com/aocode-public/apidocs/</link>
+									<link>https://aoindustries.com/ao-concurrent/apidocs/</link>
+									<link>https://aoindustries.com/ao-messaging/api/apidocs/</link>
+									<link>https://aoindustries.com/ao-messaging/base/apidocs/</link>
+									<link>https://aoindustries.com/ao-messaging/http/apidocs/</link>
+									<link>https://aoindustries.com/aocode-public/apidocs/</link>
 								</links>
 							</configuration>
 						</plugin>
