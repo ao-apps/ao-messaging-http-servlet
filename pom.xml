@@ -36,7 +36,6 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 	<packaging>jar</packaging>
 
 	<properties>
-		<bookPath>/${project.parent.artifactId}/http/servlet</bookPath>
 		<shortTitle>Servlet</shortTitle>
 		<javadoc.breadcrumbs><![CDATA[<a target="_top" href="${project.parent.url}">${project.parent.name}</a>
 / <a target="_top" href="${project.parent.url}http/">HTTP</a>
@@ -44,7 +43,7 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 	</properties>
 
 	<name>AO Messaging HTTP Servlet</name>
-	<url>https://aoindustries.com${bookPath}/</url><!-- Can't inherit due to multi-module -->
+	<url>https://aoindustries.com/${project.parent.artifactId}/http/servlet/</url>
 	<description>Servlet-based server for asynchronous bidirectional messaging over HTTP.</description>
 	<inceptionYear>2014</inceptionYear>
 
