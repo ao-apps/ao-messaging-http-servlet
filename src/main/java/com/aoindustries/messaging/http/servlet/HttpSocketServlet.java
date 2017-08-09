@@ -1,6 +1,6 @@
 /*
  * ao-messaging-http-servlet - Servlet-based server for asynchronous bidirectional messaging over HTTP.
- * Copyright (C) 2014, 2015, 2016  AO Industries, Inc.
+ * Copyright (C) 2014, 2015, 2016, 2017  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -32,7 +32,9 @@ import com.aoindustries.messaging.base.AbstractSocketContext;
 import com.aoindustries.messaging.http.HttpSocket;
 import com.aoindustries.nio.charset.Charsets;
 import com.aoindustries.security.Identifier;
+import com.aoindustries.tempfiles.TempFileContext;
 import com.aoindustries.util.concurrent.Callback;
+import com.aoindustries.util.concurrent.Executors;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -210,8 +212,16 @@ abstract public class HttpSocketServlet extends HttpServlet {
 
 	private final Encoder textInXhtmlEncoder;
 
+	private Executors executors;
+
 	protected HttpSocketServlet(Encoder textInXhtmlEncoder) {
 		this.textInXhtmlEncoder = textInXhtmlEncoder;
+	}
+
+	@Override
+	public void init() throws ServletException {
+		super.init();
+		executors = new Executors();
 	}
 
 	/**
@@ -286,37 +296,69 @@ abstract public class HttpSocketServlet extends HttpServlet {
 				try {
 					// Handle incoming messages
 					{
-						int size = Integer.parseInt(request.getParameter("l"));
-						if(DEBUG) System.err.println("DEBUG: HttpSocketServlet: doPost: size="+size);
-						// Add all messages to the inQueue by sequence to handle out-of-order messages
-						List<Message> messages;
-						synchronized(socket.inQueue) {
-							for(int i=0; i<size; i++) {
-								// Get the sequence
-								Long seq = Long.parseLong(request.getParameter("s"+i));
-								// Get the type
-								MessageType type = MessageType.getFromTypeChar(request.getParameter("t"+i).charAt(0));
-								// Get the message string
-								String encodedMessage = request.getParameter("m"+i);
-								// Decode and add
-								if(socket.inQueue.put(seq, type.decode(encodedMessage)) != null) {
-									throw new IOException("Duplicate incoming sequence: " + seq);
+						TempFileContext tempFileContext = new TempFileContext();
+						try {
+							int size = Integer.parseInt(request.getParameter("l"));
+							if(DEBUG) System.err.println("DEBUG: HttpSocketServlet: doPost: size="+size);
+							// Add all messages to the inQueue by sequence to handle out-of-order messages
+							List<Message> messages;
+							synchronized(socket.inQueue) {
+								for(int i=0; i<size; i++) {
+									// Get the sequence
+									Long seq = Long.parseLong(request.getParameter("s"+i));
+									// Get the type
+									MessageType type = MessageType.getFromTypeChar(request.getParameter("t"+i).charAt(0));
+									// Get the message string
+									String encodedMessage = request.getParameter("m"+i);
+									// Decode and add
+									if(socket.inQueue.put(seq, type.decode(encodedMessage, tempFileContext)) != null) {
+										throw new IOException("Duplicate incoming sequence: " + seq);
+									}
+								}
+								// Gather as many messages that have been delivered in-order
+								messages = new ArrayList<Message>(socket.inQueue.size());
+								while(true) {
+									Message message = socket.inQueue.remove(socket.inSeq);
+									if(message != null) {
+										messages.add(message);
+										socket.inSeq++;
+									} else {
+										// Break in the sequence
+										break;
+									}
 								}
 							}
-							// Gather as many messages that have been delivered in-order
-							messages = new ArrayList<Message>(socket.inQueue.size());
-							while(true) {
-								Message message = socket.inQueue.remove(socket.inSeq);
-								if(message != null) {
-									messages.add(message);
-									socket.inSeq++;
-								} else {
-									// Break in the sequence
-									break;
+							if(!messages.isEmpty()) {
+								final Future<?> future = socket.callOnMessages(Collections.unmodifiableList(messages));
+								if(tempFileContext.getSize() != 0) {
+									// Close temp file context, thus deleting temp files, once all messages have been handled
+									final TempFileContext closeMeNow = tempFileContext;
+									executors.getUnbounded().submit(
+										new Runnable() {
+											@Override
+											public void run() {
+												try {
+													try {
+														// Wait until all messages handled
+														future.get();
+													} finally {
+														// Delete temp files
+														closeMeNow.close();
+													}
+												} catch(ThreadDeath td) {
+													throw td;
+												} catch(Throwable t) {
+													logger.log(Level.SEVERE, null, t);
+												}
+											}
+										}
+									);
+									tempFileContext = null; // Don't close now
 								}
 							}
+						} finally {
+							if(tempFileContext != null) tempFileContext.close();
 						}
-						if(!messages.isEmpty()) socket.callOnMessages(Collections.unmodifiableList(messages));
 					}
 					// Handle outgoing messages
 					{
@@ -370,10 +412,18 @@ abstract public class HttpSocketServlet extends HttpServlet {
 	}
 
 	/**
-	 * When the servlet is destroyed, all active sockets are also closed.
+	 * When the servlet is destroyed, any executors and all active sockets are also closed.
 	 */
 	@Override
 	public void destroy() {
-		socketContext.close();
+		try {
+			try {
+				socketContext.close();
+			} finally {
+				executors.dispose();
+			}
+		} finally {
+			super.destroy();
+		}
 	}
 }
