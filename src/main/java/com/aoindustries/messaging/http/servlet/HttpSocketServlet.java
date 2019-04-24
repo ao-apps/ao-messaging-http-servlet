@@ -1,6 +1,6 @@
 /*
  * ao-messaging-http-servlet - Servlet-based server for asynchronous bidirectional messaging over HTTP.
- * Copyright (C) 2014, 2015, 2016, 2017, 2018  AO Industries, Inc.
+ * Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -30,7 +30,6 @@ import com.aoindustries.messaging.Socket;
 import com.aoindustries.messaging.base.AbstractSocket;
 import com.aoindustries.messaging.base.AbstractSocketContext;
 import com.aoindustries.messaging.http.HttpSocket;
-import com.aoindustries.nio.charset.Charsets;
 import com.aoindustries.security.Identifier;
 import com.aoindustries.tempfiles.TempFileContext;
 import com.aoindustries.util.concurrent.Callback;
@@ -41,6 +40,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,10 +77,10 @@ abstract public class HttpSocketServlet extends HttpServlet {
 
 		private final String serverName;
 
-		final Map<Long,Message> inQueue = new HashMap<Long,Message>();
+		final Map<Long,Message> inQueue = new HashMap<>();
 		long inSeq = 1; // Synchronized on inQueue
 
-		private final Queue<Message> outQueue = new LinkedList<Message>();
+		private final Queue<Message> outQueue = new LinkedList<>();
 		private Thread outQueueCurrentThread; // Synchronized on outQueue
 		private long outSeq = 1; // Synchronized on outQueue
 
@@ -165,7 +165,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 				try {
 					while(true) {
 						if(!outQueue.isEmpty()) {
-							Map<Long,Message> messages = new LinkedHashMap<Long,Message>(outQueue.size()*4/3+1);
+							Map<Long,Message> messages = new LinkedHashMap<>(outQueue.size()*4/3+1);
 							while(!outQueue.isEmpty()) {
 								messages.put(outSeq++, outQueue.remove());
 							}
@@ -247,14 +247,11 @@ abstract public class HttpSocketServlet extends HttpServlet {
 			// Build the response
 			AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
 			try {
-				Writer out = new OutputStreamWriter(bout, Charsets.UTF_8);
-				try {
+				try (Writer out = new OutputStreamWriter(bout, StandardCharsets.UTF_8)) {
 					out.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
 						+ "<connection id=\"");
 					out.write(id.toString());
 					out.write("\"/>");
-				} finally {
-					out.close();
 				}
 			} finally {
 				bout.close();
@@ -314,7 +311,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 									}
 								}
 								// Gather as many messages that have been delivered in-order
-								messages = new ArrayList<Message>(socket.inQueue.size());
+								messages = new ArrayList<>(socket.inQueue.size());
 								while(true) {
 									Message message = socket.inQueue.remove(socket.inSeq);
 									if(message != null) {
@@ -364,8 +361,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 						// Build the response
 						AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
 						try {
-							Writer out = new OutputStreamWriter(bout, Charsets.UTF_8);
-							try {
+							try (Writer out = new OutputStreamWriter(bout, StandardCharsets.UTF_8)) {
 								out.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
 									+ "<messages>\n");
 								for(Map.Entry<Long,? extends Message> entry : outMessages.entrySet()) {
@@ -380,8 +376,6 @@ abstract public class HttpSocketServlet extends HttpServlet {
 									out.write("</message>\n");
 								}
 								out.write("</messages>");
-							} finally {
-								out.close();
 							}
 						} finally {
 							bout.close();
