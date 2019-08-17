@@ -36,7 +36,7 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 		shortTitle="Changelog"
 		tocLevels="1"
 		datePublished="2016-10-29T20:46:44-0500"
-		dateModified="2019-06-21T05:26:01-0500"
+		dateModified="2019-08-17T01:16:11-0500"
 	>
 		<!-- The current snapshot, unreleased version -->
 		<c:set var="version" value="@{com.aoindustries:ao-messaging-http-servlet:pom.version}" />
@@ -51,7 +51,11 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 				groupId="@{documented.groupId}"
 				artifactId="@{documented.artifactId}"
 				scmUrl="@{documented.scm.url}"
-			/>
+			>
+				<ul>
+					<li>Using <code>java.nio.charset.StandardCharsets</code> instead of <code>"UTF-8"</code>.</li>
+				</ul>
+			</changelog:release>
 		</c:if>
 
 		<changelog:release

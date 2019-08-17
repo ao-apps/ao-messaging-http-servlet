@@ -40,7 +40,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -247,8 +247,10 @@ abstract public class HttpSocketServlet extends HttpServlet {
 			// Build the response
 			AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
 			try {
-				try (Writer out = new OutputStreamWriter(bout, StandardCharsets.UTF_8)) {
-					out.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+				try (Writer out = new OutputStreamWriter(bout, HttpSocket.ENCODING)) {
+					out.write("<?xml version=\"1.0\" encoding=\"");
+					out.write(HttpSocket.ENCODING.name());
+					out.write("\" standalone=\"yes\"?>\n"
 						+ "<connection id=\"");
 					out.write(id.toString());
 					out.write("\"/>");
@@ -257,7 +259,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 				bout.close();
 			}
 			response.setContentType("application/xml");
-			response.setCharacterEncoding("UTF-8");
+			response.setCharacterEncoding(HttpSocket.ENCODING.name());
 			response.setContentLength(bout.size());
 			OutputStream out = response.getOutputStream();
 			try {
@@ -340,9 +342,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 														// Delete temp files
 														closeMeNow.close();
 													}
-												} catch(ThreadDeath td) {
-													throw td;
-												} catch(Throwable t) {
+												} catch(RuntimeException | IOException | InterruptedException | ExecutionException t) {
 													logger.log(Level.SEVERE, null, t);
 												}
 											}
@@ -361,8 +361,10 @@ abstract public class HttpSocketServlet extends HttpServlet {
 						// Build the response
 						AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
 						try {
-							try (Writer out = new OutputStreamWriter(bout, StandardCharsets.UTF_8)) {
-								out.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+							try (Writer out = new OutputStreamWriter(bout, HttpSocket.ENCODING)) {
+								out.write("<?xml version=\"1.0\" encoding=\"");
+								out.write(HttpSocket.ENCODING.name());
+								out.write("\" standalone=\"yes\"?>\n"
 									+ "<messages>\n");
 								for(Map.Entry<Long,? extends Message> entry : outMessages.entrySet()) {
 									Long seq = entry.getKey();
@@ -381,7 +383,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 							bout.close();
 						}
 						response.setContentType("application/xml");
-						response.setCharacterEncoding("UTF-8");
+						response.setCharacterEncoding(HttpSocket.ENCODING.name());
 						response.setContentLength(bout.size());
 						OutputStream out = response.getOutputStream();
 						try {
@@ -390,12 +392,9 @@ abstract public class HttpSocketServlet extends HttpServlet {
 							out.close();
 						}
 					}
-				} catch(Exception e) {
+				} catch(RuntimeException | IOException e) {
 					socket.callOnError(e);
-					if(e instanceof ServletException) throw (ServletException)e;
-					if(e instanceof IOException     ) throw (IOException)e;
-					if(e instanceof RuntimeException) throw (RuntimeException)e;
-					throw new ServletException(e);
+					throw e;
 				}
 			}
 		} else {
