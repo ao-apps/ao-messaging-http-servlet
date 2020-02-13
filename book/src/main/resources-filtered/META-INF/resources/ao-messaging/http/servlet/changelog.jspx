@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 ao-messaging-http-servlet - Servlet-based server for asynchronous bidirectional messaging over HTTP.
-Copyright (C) 2016, 2017, 2019  AO Industries, Inc.
+Copyright (C) 2016, 2017, 2019, 2020  AO Industries, Inc.
     support@aoindustries.com
     7262 Bull Pen Cir
     Mobile, AL 36695
@@ -36,7 +36,7 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 		shortTitle="Changelog"
 		tocLevels="1"
 		datePublished="2016-10-29T20:46:44-0500"
-		dateModified="2019-11-03T02:12:52-0600"
+		dateModified="2020-02-13T12:50:01-0600"
 	>
 		<!-- The current snapshot, unreleased version -->
 		<c:set var="version" value="@{com.aoindustries:ao-messaging-http-servlet:pom.version}" />
@@ -54,6 +54,7 @@ along with ao-messaging-http-servlet.  If not, see <http://www.gnu.org/licenses 
 			>
 				<ul>
 					<li>Minimum Java version changed from 1.7 to 1.8.</li>
+					<li>Using constants from new <code>ContentType</code> class.</li>
 				</ul>
 			</changelog:release>
 		</c:if>

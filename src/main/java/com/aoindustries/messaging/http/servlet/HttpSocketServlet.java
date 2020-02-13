@@ -1,6 +1,6 @@
 /*
  * ao-messaging-http-servlet - Servlet-based server for asynchronous bidirectional messaging over HTTP.
- * Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019  AO Industries, Inc.
+ * Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019, 2020  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -23,6 +23,7 @@
 package com.aoindustries.messaging.http.servlet;
 
 import com.aoindustries.io.AoByteArrayOutputStream;
+import com.aoindustries.io.ContentType;
 import com.aoindustries.io.Encoder;
 import com.aoindustries.messaging.Message;
 import com.aoindustries.messaging.MessageType;
@@ -258,7 +259,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 			} finally {
 				bout.close();
 			}
-			response.setContentType("application/xml");
+			response.setContentType(ContentType.XML);
 			response.setCharacterEncoding(HttpSocket.ENCODING.name());
 			response.setContentLength(bout.size());
 			OutputStream out = response.getOutputStream();
@@ -382,7 +383,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 						} finally {
 							bout.close();
 						}
-						response.setContentType("application/xml");
+						response.setContentType(ContentType.XML);
 						response.setCharacterEncoding(HttpSocket.ENCODING.name());
 						response.setContentLength(bout.size());
 						OutputStream out = response.getOutputStream();
