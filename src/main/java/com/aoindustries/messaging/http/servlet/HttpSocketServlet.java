@@ -22,6 +22,8 @@
  */
 package com.aoindustries.messaging.http.servlet;
 
+import com.aoindustries.concurrent.Callback;
+import com.aoindustries.concurrent.Executors;
 import com.aoindustries.io.AoByteArrayOutputStream;
 import com.aoindustries.io.ContentType;
 import com.aoindustries.io.Encoder;
@@ -33,8 +35,6 @@ import com.aoindustries.messaging.base.AbstractSocketContext;
 import com.aoindustries.messaging.http.HttpSocket;
 import com.aoindustries.security.Identifier;
 import com.aoindustries.tempfiles.TempFileContext;
-import com.aoindustries.util.concurrent.Callback;
-import com.aoindustries.util.concurrent.Executors;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
