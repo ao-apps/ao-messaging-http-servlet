@@ -331,24 +331,19 @@ abstract public class HttpSocketServlet extends HttpServlet {
 								if(tempFileContext.getSize() != 0) {
 									// Close temp file context, thus deleting temp files, once all messages have been handled
 									final TempFileContext closeMeNow = tempFileContext;
-									executors.getUnbounded().submit(
-										new Runnable() {
-											@Override
-											public void run() {
-												try {
-													try {
-														// Wait until all messages handled
-														future.get();
-													} finally {
-														// Delete temp files
-														closeMeNow.close();
-													}
-												} catch(RuntimeException | IOException | InterruptedException | ExecutionException t) {
-													logger.log(Level.SEVERE, null, t);
-												}
+									executors.getUnbounded().submit(() -> {
+										try {
+											try {
+												// Wait until all messages handled
+												future.get();
+											} finally {
+												// Delete temp files
+												closeMeNow.close();
 											}
+										} catch(RuntimeException | IOException | InterruptedException | ExecutionException t) {
+											logger.log(Level.SEVERE, null, t);
 										}
-									);
+									});
 									tempFileContext = null; // Don't close now
 								}
 							}
