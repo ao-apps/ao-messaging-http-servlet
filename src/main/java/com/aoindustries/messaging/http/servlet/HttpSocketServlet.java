@@ -388,7 +388,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 							out.close();
 						}
 					}
-				} catch(RuntimeException | IOException e) {
+				} catch(Exception e) {
 					socket.callOnError(e);
 					throw e;
 				}
