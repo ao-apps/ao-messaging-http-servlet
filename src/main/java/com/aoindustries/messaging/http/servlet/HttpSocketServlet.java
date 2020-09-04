@@ -50,7 +50,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,8 +67,6 @@ abstract public class HttpSocketServlet extends HttpServlet {
 	private static final Logger logger = Logger.getLogger(HttpSocketServlet.class.getName());
 
 	private static final long serialVersionUID = 1L;
-
-	private static final boolean DEBUG = false;
 
 	/** Server should normally respond within 60 seconds even if no data coming back. */
 	private static final int LONG_POLL_TIMEOUT = HttpSocket.READ_TIMEOUT / 2;
@@ -132,14 +129,27 @@ abstract public class HttpSocketServlet extends HttpServlet {
 
 		// Expose to this package
 		@Override
-		protected Future<?> callOnError(Exception exc) throws IllegalStateException {
-			return super.callOnError(exc);
+		protected Future<?> callOnError(Throwable t) throws IllegalStateException {
+			return super.callOnError(t);
 		}
 
 		@Override
-		protected void startImpl(Callback<? super Socket> onStart, Callback<? super Exception> onError) {
-			// Nothing to do
-			if(onStart!=null) onStart.call(this);
+		protected void startImpl(
+			Callback<? super Socket> onStart,
+			Callback<? super Throwable> onError
+		) {
+			if(onStart != null) {
+				logger.log(Level.FINE, "Calling onStart: {0}", this);
+				try {
+					onStart.call(this);
+				} catch(ThreadDeath td) {
+					throw td;
+				} catch(Throwable t) {
+					logger.log(Level.SEVERE, null, t);
+				}
+			} else {
+				logger.log(Level.FINE, "No onStart: {0}", this);
+			}
 		}
 
 		@Override
@@ -183,7 +193,8 @@ abstract public class HttpSocketServlet extends HttpServlet {
 						try {
 							outQueue.wait(timeRemaining);
 						} catch(InterruptedException e) {
-							logger.log(Level.WARNING, null, e);
+							logger.log(Level.FINE, null, e);
+							// Not restoring thread interrupt, just looping again
 						}
 					}
 				} finally {
@@ -240,6 +251,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 	}
 
 	@Override
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String action = request.getParameter("action");
 		if("connect".equals(action)) {
@@ -271,7 +283,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 			// Determine the port
 			int remotePort = request.getRemotePort();
 			if(remotePort < 0) remotePort = 0; // < 0 when unknown such as old AJP13 protocol
-			if(DEBUG) System.err.println("DEBUG: HttpSocketServlet: doPost: remotePort="+remotePort);
+			logger.log(Level.FINEST, "remotePort = {0}", remotePort);
 			ServletSocket servletSocket = new ServletSocket(
 				socketContext,
 				id,
@@ -285,10 +297,10 @@ abstract public class HttpSocketServlet extends HttpServlet {
 			socketContext.addSocket(servletSocket);
 		} else if("messages".equals(action)) {
 			Identifier id = Identifier.valueOf(request.getParameter("id"));
-			if(DEBUG) System.err.println("DEBUG: HttpSocketServlet: doPost: id="+id);
+			logger.log(Level.FINEST, "id = {0}", id);
 			ServletSocket socket = socketContext.getSocket(id);
 			if(socket==null) {
-				if(DEBUG) System.err.println("DEBUG: HttpSocketServlet: doPost: socket not found");
+				logger.log(Level.FINEST, "Socket not found");
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Socket id not found");
 			} else {
 				try {
@@ -297,7 +309,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 						TempFileContext tempFileContext = new TempFileContext();
 						try {
 							int size = Integer.parseInt(request.getParameter("l"));
-							if(DEBUG) System.err.println("DEBUG: HttpSocketServlet: doPost: size="+size);
+							logger.log(Level.FINEST, "size = ", size);
 							// Add all messages to the inQueue by sequence to handle out-of-order messages
 							List<Message> messages;
 							synchronized(socket.inQueue) {
@@ -337,10 +349,21 @@ abstract public class HttpSocketServlet extends HttpServlet {
 												// Wait until all messages handled
 												future.get();
 											} finally {
-												// Delete temp files
-												closeMeNow.close();
+												try {
+													// Delete temp files
+													closeMeNow.close();
+												} catch(ThreadDeath td) {
+													throw td;
+												} catch(Throwable t) {
+													logger.log(Level.SEVERE, null, t);
+												}
 											}
-										} catch(RuntimeException | IOException | InterruptedException | ExecutionException t) {
+										} catch(InterruptedException e) {
+											logger.log(Level.FINE, null, e);
+											Thread.currentThread().interrupt();
+										} catch(ThreadDeath td) {
+											throw td;
+										} catch(Throwable t) {
 											logger.log(Level.SEVERE, null, t);
 										}
 									});
@@ -348,7 +371,15 @@ abstract public class HttpSocketServlet extends HttpServlet {
 								}
 							}
 						} finally {
-							if(tempFileContext != null) tempFileContext.close();
+							if(tempFileContext != null) {
+								try {
+									tempFileContext.close();
+								} catch(ThreadDeath td) {
+									throw td;
+								} catch(Throwable t) {
+									logger.log(Level.WARNING, null, t);
+								}
+							}
 						}
 					}
 					// Handle outgoing messages
@@ -388,9 +419,11 @@ abstract public class HttpSocketServlet extends HttpServlet {
 							out.close();
 						}
 					}
-				} catch(Exception e) {
-					socket.callOnError(e);
-					throw e;
+				} catch(ThreadDeath td) {
+					throw td;
+				} catch(Throwable t) {
+					socket.callOnError(t);
+					throw t;
 				}
 			}
 		} else {
