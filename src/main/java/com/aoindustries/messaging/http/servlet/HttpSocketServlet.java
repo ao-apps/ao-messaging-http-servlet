@@ -77,7 +77,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 		private final String serverName;
 
 		final Map<Long,Message> inQueue = new HashMap<>();
-		long inSeq = 1; // Synchronized on inQueue
+		private long inSeq = 1; // Synchronized on inQueue
 
 		private final Queue<Message> outQueue = new LinkedList<>();
 		private Thread outQueueCurrentThread; // Synchronized on outQueue
