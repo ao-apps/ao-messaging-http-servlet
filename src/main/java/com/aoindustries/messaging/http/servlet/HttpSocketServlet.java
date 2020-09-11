@@ -27,6 +27,7 @@ import com.aoindustries.concurrent.Executors;
 import com.aoindustries.io.AoByteArrayOutputStream;
 import com.aoindustries.io.ContentType;
 import com.aoindustries.io.Encoder;
+import com.aoindustries.lang.Throwables;
 import com.aoindustries.messaging.Message;
 import com.aoindustries.messaging.MessageType;
 import com.aoindustries.messaging.Socket;
@@ -251,7 +252,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 	}
 
 	@Override
-	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch"})
+	@SuppressWarnings({"UseSpecificCatch", "TooBroadCatch", "AssignmentToCatchBlockParameter"})
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String action = request.getParameter("action");
 		if("connect".equals(action)) {
@@ -419,11 +420,16 @@ abstract public class HttpSocketServlet extends HttpServlet {
 							out.close();
 						}
 					}
-				} catch(ThreadDeath td) {
-					throw td;
 				} catch(Throwable t) {
-					socket.callOnError(t);
-					throw t;
+					try {
+						socket.callOnError(t);
+					} catch(Throwable t2) {
+						t = Throwables.addSuppressed(t, t2);
+					}
+					if(t instanceof Error) throw (Error)t;
+					if(t instanceof RuntimeException) throw (RuntimeException)t;
+					if(t instanceof IOException) throw (IOException)t;
+					throw new ServletException(t);
 				}
 			}
 		} else {
