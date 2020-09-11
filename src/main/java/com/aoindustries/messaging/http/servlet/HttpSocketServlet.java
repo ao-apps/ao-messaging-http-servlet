@@ -428,6 +428,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 					}
 					if(t instanceof Error) throw (Error)t;
 					if(t instanceof RuntimeException) throw (RuntimeException)t;
+					if(t instanceof ServletException) throw (ServletException)t;
 					if(t instanceof IOException) throw (IOException)t;
 					throw new ServletException(t);
 				}
