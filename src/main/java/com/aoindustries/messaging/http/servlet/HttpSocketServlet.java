@@ -420,17 +420,14 @@ abstract public class HttpSocketServlet extends HttpServlet {
 							out.close();
 						}
 					}
-				} catch(Throwable t) {
+				} catch(Throwable t0) {
 					try {
-						socket.callOnError(t);
-					} catch(Throwable t2) {
-						t = Throwables.addSuppressed(t, t2);
+						socket.callOnError(t0);
+					} catch(Throwable t) {
+						t0 = Throwables.addSuppressed(t0, t);
 					}
-					if(t instanceof Error) throw (Error)t;
-					if(t instanceof RuntimeException) throw (RuntimeException)t;
-					if(t instanceof ServletException) throw (ServletException)t;
-					if(t instanceof IOException) throw (IOException)t;
-					throw new ServletException(t);
+					if(t0 instanceof IOException) throw (IOException)t0;
+					throw Throwables.wrap(t0, ServletException.class, ServletException::new);
 				}
 			}
 		} else {
