@@ -22,6 +22,7 @@
  */
 package com.aoindustries.messaging.http.servlet;
 
+import com.aoindustries.collections.AoCollections;
 import com.aoindustries.concurrent.Callback;
 import com.aoindustries.concurrent.Executors;
 import com.aoindustries.io.AoByteArrayOutputStream;
@@ -46,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -177,7 +177,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 				try {
 					while(true) {
 						if(!outQueue.isEmpty()) {
-							Map<Long,Message> messages = new LinkedHashMap<>(outQueue.size()*4/3+1);
+							Map<Long,Message> messages = AoCollections.newLinkedHashMap(outQueue.size());
 							while(!outQueue.isEmpty()) {
 								messages.put(outSeq++, outQueue.remove());
 							}
