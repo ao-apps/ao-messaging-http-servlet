@@ -444,7 +444,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 			try {
 				socketContext.close();
 			} finally {
-				executors.dispose();
+				executors.close();
 			}
 		} finally {
 			super.destroy();
