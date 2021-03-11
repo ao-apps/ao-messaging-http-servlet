@@ -1,6 +1,6 @@
 /*
  * ao-messaging-http-servlet - Servlet-based server for asynchronous bidirectional messaging over HTTP.
- * Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019, 2020  AO Industries, Inc.
+ * Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -76,7 +76,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 
 		private final String serverName;
 
-		final Map<Long,Message> inQueue = new HashMap<>();
+		final Map<Long, Message> inQueue = new HashMap<>();
 		private long inSeq = 1; // Synchronized on inQueue
 
 		private final Queue<Message> outQueue = new LinkedList<>();
@@ -166,7 +166,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 		 * LONG_POLL_TIMEOUT milliseconds.
 		 * If a new thread comes-in, the first thread will be notified to return immediately.
 		 */
-		Map<Long,? extends Message> getOutMessages() {
+		Map<Long, ? extends Message> getOutMessages() {
 			long endMillis = (System.nanoTime() / 1000000) + LONG_POLL_TIMEOUT;
 			final Thread currentThread = Thread.currentThread();
 			synchronized(outQueue) {
@@ -177,7 +177,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 				try {
 					while(true) {
 						if(!outQueue.isEmpty()) {
-							Map<Long,Message> messages = AoCollections.newLinkedHashMap(outQueue.size());
+							Map<Long, Message> messages = AoCollections.newLinkedHashMap(outQueue.size());
 							while(!outQueue.isEmpty()) {
 								messages.put(outSeq++, outQueue.remove());
 							}
@@ -385,7 +385,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 					}
 					// Handle outgoing messages
 					{
-						Map<Long,? extends Message> outMessages = socket.getOutMessages();
+						Map<Long, ? extends Message> outMessages = socket.getOutMessages();
 						// Build the response
 						AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
 						try {
@@ -394,7 +394,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 								out.write(HttpSocket.ENCODING.name());
 								out.write("\" standalone=\"yes\"?>\n"
 									+ "<messages>\n");
-								for(Map.Entry<Long,? extends Message> entry : outMessages.entrySet()) {
+								for(Map.Entry<Long, ? extends Message> entry : outMessages.entrySet()) {
 									Long seq = entry.getKey();
 									Message message = entry.getValue();
 									out.write("  <message seq=\"");
