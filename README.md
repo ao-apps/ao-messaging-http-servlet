@@ -10,6 +10,12 @@
 
 [![Build](https://github.com/aoindustries/ao-messaging-http-servlet/workflows/Build/badge.svg?branch=master)](https://github.com/aoindustries/ao-messaging-http-servlet/actions?query=workflow%3ABuild)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.aoapps/ao-messaging-http-servlet/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.aoapps/ao-messaging-http-servlet)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-messaging-http-servlet&metric=alert_status)](https://sonarcloud.io/dashboard?branch=master&id=com.aoapps%3Aao-messaging-http-servlet)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-messaging-http-servlet&metric=ncloc)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-messaging-http-servlet&metric=ncloc)  
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-messaging-http-servlet&metric=reliability_rating)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-messaging-http-servlet&metric=Reliability)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-messaging-http-servlet&metric=security_rating)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-messaging-http-servlet&metric=Security)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-messaging-http-servlet&metric=sqale_rating)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-messaging-http-servlet&metric=Maintainability)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?branch=master&project=com.aoapps%3Aao-messaging-http-servlet&metric=coverage)](https://sonarcloud.io/component_measures?branch=master&id=com.aoapps%3Aao-messaging-http-servlet&metric=Coverage)
 
 Servlet-based server for asynchronous bidirectional messaging over HTTP.
 
