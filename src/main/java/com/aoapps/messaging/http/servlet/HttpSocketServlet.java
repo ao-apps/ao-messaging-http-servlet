@@ -63,7 +63,7 @@ import javax.servlet.http.HttpServletResponse;
  * Server component for bi-directional messaging over HTTP.
  * This is a synchronous implementation compatible with older environments.
  */
-abstract public class HttpSocketServlet extends HttpServlet {
+public abstract class HttpSocketServlet extends HttpServlet {
 
 	private static final Logger logger = Logger.getLogger(HttpSocketServlet.class.getName());
 
@@ -239,7 +239,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 	 * Last modified times must never be used.
 	 */
 	@Override
-	final protected long getLastModified(HttpServletRequest request) {
+	protected final long getLastModified(HttpServletRequest request) {
 		return -1;
 	}
 
@@ -247,7 +247,7 @@ abstract public class HttpSocketServlet extends HttpServlet {
 	 * Get requests must never be used.
 	 */
 	@Override
-	final protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected final void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
