@@ -166,7 +166,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
 		 * LONG_POLL_TIMEOUT milliseconds.
 		 * If a new thread comes-in, the first thread will be notified to return immediately.
 		 */
-		Map<Long, ? extends Message> getOutMessages() {
+		Map<Long, ? extends Message> getOutMessages() throws InterruptedException {
 			long endMillis = (System.nanoTime() / 1000000) + LONG_POLL_TIMEOUT;
 			final Thread currentThread = Thread.currentThread();
 			synchronized(outQueue) {
@@ -176,6 +176,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
 				outQueueCurrentThread = currentThread;
 				try {
 					while(true) {
+						if(Thread.interrupted()) throw new InterruptedException();
 						if(!outQueue.isEmpty()) {
 							Map<Long, Message> messages = AoCollections.newLinkedHashMap(outQueue.size());
 							while(!outQueue.isEmpty()) {
@@ -184,19 +185,18 @@ public abstract class HttpSocketServlet extends HttpServlet {
 							outQueue.notifyAll();
 							return Collections.unmodifiableMap(messages);
 						}
-						// Check if closed
-						if(isClosed()) return Collections.emptyMap();
-						// Check if replaced by a newer thread
-						if(outQueueCurrentThread != currentThread) return Collections.emptyMap();
+						if(
+							// Check if closed
+							isClosed()
+							// Check if replaced by a newer thread
+							|| outQueueCurrentThread != currentThread
+						) {
+							return Collections.emptyMap();
+						}
 						// Check if time expired
 						long timeRemaining = endMillis - (System.nanoTime() / 1000000);
 						if(timeRemaining <= 0) return Collections.emptyMap();
-						try {
-							outQueue.wait(timeRemaining);
-						} catch(InterruptedException e) {
-							logger.log(Level.FINE, null, e);
-							// Not restoring thread interrupt, just looping again
-						}
+						outQueue.wait(timeRemaining);
 					}
 				} finally {
 					if(outQueueCurrentThread == currentThread) outQueueCurrentThread = null;
@@ -361,6 +361,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
 											}
 										} catch(InterruptedException e) {
 											logger.log(Level.FINE, null, e);
+											// Restore the interrupted status
 											Thread.currentThread().interrupt();
 										} catch(ThreadDeath td) {
 											throw td;
