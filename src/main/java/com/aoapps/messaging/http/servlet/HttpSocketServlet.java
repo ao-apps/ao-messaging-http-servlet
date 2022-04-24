@@ -85,17 +85,17 @@ public abstract class HttpSocketServlet extends HttpServlet {
     private long outSeq = 1; // Synchronized on outQueue
 
     ServletSocket(
-      ServletSocketContext socketContext,
-      Identifier id,
-      long connectTime,
-      SocketAddress remoteSocketAddress,
-      String serverName
+        ServletSocketContext socketContext,
+        Identifier id,
+        long connectTime,
+        SocketAddress remoteSocketAddress,
+        String serverName
     ) {
       super(
-        socketContext,
-        id,
-        connectTime,
-        remoteSocketAddress
+          socketContext,
+          id,
+          connectTime,
+          remoteSocketAddress
       );
       this.serverName = serverName;
     }
@@ -137,8 +137,8 @@ public abstract class HttpSocketServlet extends HttpServlet {
 
     @Override
     protected void startImpl(
-      Callback<? super Socket> onStart,
-      Callback<? super Throwable> onError
+        Callback<? super Socket> onStart,
+        Callback<? super Throwable> onError
     ) {
       if (onStart != null) {
         logger.log(Level.FINE, "Calling onStart: {0}", this);
@@ -191,10 +191,10 @@ public abstract class HttpSocketServlet extends HttpServlet {
               return Collections.unmodifiableMap(messages);
             }
             if (
-              // Check if closed
-              isClosed()
-              // Check if replaced by a newer thread
-              || outQueueCurrentThread != currentThread
+                // Check if closed
+                isClosed()
+                    // Check if replaced by a newer thread
+                    || outQueueCurrentThread != currentThread
             ) {
               return Collections.emptyMap();
             }
@@ -274,7 +274,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
           out.write("<?xml version=\"1.0\" encoding=\"");
           out.write(HttpSocket.ENCODING.name());
           out.write("\" standalone=\"yes\"?>\n"
-            + "<connection id=\"");
+              + "<connection id=\"");
           out.write(id.toString());
           out.write("\"/>");
         }
@@ -293,21 +293,21 @@ public abstract class HttpSocketServlet extends HttpServlet {
       // Determine the port
       int remotePort = request.getRemotePort();
       if (
-        // < 0 when unknown such as old AJP13 protocol
-        remotePort < 0
+          // < 0 when unknown such as old AJP13 protocol
+          remotePort < 0
       ) {
         remotePort = 0;
       }
       logger.log(Level.FINEST, "remotePort = {0}", remotePort);
       ServletSocket servletSocket = new ServletSocket(
-        socketContext,
-        id,
-        connectTime,
-        new InetSocketAddress(
-          request.getRemoteAddr(),
-          remotePort
-        ),
-        request.getServerName()
+          socketContext,
+          id,
+          connectTime,
+          new InetSocketAddress(
+              request.getRemoteAddr(),
+              remotePort
+          ),
+          request.getServerName()
       );
       socketContext.addSocket(servletSocket);
     } else if ("messages".equals(action)) {
@@ -328,13 +328,13 @@ public abstract class HttpSocketServlet extends HttpServlet {
               // Add all messages to the inQueue by sequence to handle out-of-order messages
               List<Message> messages;
               synchronized (socket.inQueue) {
-                for (int i=0; i<size; i++) {
+                for (int i = 0; i < size; i++) {
                   // Get the sequence
-                  Long seq = Long.parseLong(request.getParameter("s"+i));
+                  Long seq = Long.parseLong(request.getParameter("s" + i));
                   // Get the type
-                  MessageType type = MessageType.getFromTypeChar(request.getParameter("t"+i).charAt(0));
+                  MessageType type = MessageType.getFromTypeChar(request.getParameter("t" + i).charAt(0));
                   // Get the message string
-                  String encodedMessage = request.getParameter("m"+i);
+                  String encodedMessage = request.getParameter("m" + i);
                   // Decode and add
                   if (socket.inQueue.put(seq, type.decode(encodedMessage, tempFileContext)) != null) {
                     throw new IOException("Duplicate incoming sequence: " + seq);
@@ -408,7 +408,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
                 out.write("<?xml version=\"1.0\" encoding=\"");
                 out.write(HttpSocket.ENCODING.name());
                 out.write("\" standalone=\"yes\"?>\n"
-                  + "<messages>\n");
+                    + "<messages>\n");
                 for (Map.Entry<Long, ? extends Message> entry : outMessages.entrySet()) {
                   Long seq = entry.getKey();
                   Message message = entry.getValue();
@@ -442,7 +442,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
             t0 = Throwables.addSuppressed(t0, t);
           }
           if (t0 instanceof IOException) {
-            throw (IOException)t0;
+            throw (IOException) t0;
           }
           throw Throwables.wrap(t0, ServletException.class, ServletException::new);
         }
