@@ -73,6 +73,9 @@ public abstract class HttpSocketServlet extends HttpServlet {
   /** Server should normally respond within 60 seconds even if no data coming back. */
   private static final int LONG_POLL_TIMEOUT = HttpSocket.READ_TIMEOUT / 2;
 
+  /**
+   * Servlet socket implementation.
+   */
   public static class ServletSocket extends AbstractSocket {
 
     private final String serverName;
@@ -214,11 +217,14 @@ public abstract class HttpSocketServlet extends HttpServlet {
     }
   }
 
+  /**
+   * Expose to this package.
+   */
   public static class ServletSocketContext extends AbstractSocketContext<ServletSocket> {
     // Expose to this package
     @Override
     protected Identifier newIdentifier() {
-      return super.newIdentifier(); //To change body of generated methods, choose Tools | Templates.
+      return super.newIdentifier();
     }
 
     // Expose to this package
@@ -265,8 +271,8 @@ public abstract class HttpSocketServlet extends HttpServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     String action = request.getParameter("action");
     if ("connect".equals(action)) {
-      long connectTime = System.currentTimeMillis();
-      Identifier id = socketContext.newIdentifier();
+      final long connectTime = System.currentTimeMillis();
+      final Identifier id = socketContext.newIdentifier();
       // Build the response
       AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
       try {
@@ -319,122 +325,122 @@ public abstract class HttpSocketServlet extends HttpServlet {
         response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Socket id not found");
       } else {
         try {
-          // Handle incoming messages
-          {
-            TempFileContext tempFileContext = new TempFileContext();
-            try {
-              int size = Integer.parseInt(request.getParameter("l"));
-              logger.log(Level.FINEST, "size = ", size);
-              // Add all messages to the inQueue by sequence to handle out-of-order messages
-              List<Message> messages;
-              synchronized (socket.inQueue) {
-                for (int i = 0; i < size; i++) {
-                  // Get the sequence
-                  Long seq = Long.parseLong(request.getParameter("s" + i));
-                  // Get the type
-                  MessageType type = MessageType.getFromTypeChar(request.getParameter("t" + i).charAt(0));
-                  // Get the message string
-                  String encodedMessage = request.getParameter("m" + i);
-                  // Decode and add
-                  if (socket.inQueue.put(seq, type.decode(encodedMessage, tempFileContext)) != null) {
-                    throw new IOException("Duplicate incoming sequence: " + seq);
-                  }
-                }
-                // Gather as many messages that have been delivered in-order
-                messages = new ArrayList<>(socket.inQueue.size());
-                while (true) {
-                  Message message = socket.inQueue.remove(socket.inSeq);
-                  if (message != null) {
-                    messages.add(message);
-                    socket.inSeq++;
-                  } else {
-                    // Break in the sequence
-                    break;
-                  }
-                }
-              }
-              if (!messages.isEmpty()) {
-                final Future<?> future = socket.callOnMessages(Collections.unmodifiableList(messages));
-                if (tempFileContext.getSize() != 0) {
-                  // Close temp file context, thus deleting temp files, once all messages have been handled
-                  final TempFileContext closeMeNow = tempFileContext;
-                  executors.getUnbounded().submit(() -> {
-                    try {
-                      try {
-                        // Wait until all messages handled
-                        future.get();
-                      } finally {
-                        try {
-                          // Delete temp files
-                          closeMeNow.close();
-                        } catch (ThreadDeath td) {
-                          throw td;
-                        } catch (Throwable t) {
-                          logger.log(Level.SEVERE, null, t);
-                        }
-                      }
-                    } catch (InterruptedException e) {
-                      logger.log(Level.FINE, null, e);
-                      // Restore the interrupted status
-                      Thread.currentThread().interrupt();
-                    } catch (ThreadDeath td) {
-                      throw td;
-                    } catch (Throwable t) {
-                      logger.log(Level.SEVERE, null, t);
+            // Handle incoming messages
+            {
+              TempFileContext tempFileContext = new TempFileContext();
+              try {
+                int size = Integer.parseInt(request.getParameter("l"));
+                logger.log(Level.FINEST, "size = ", size);
+                // Add all messages to the inQueue by sequence to handle out-of-order messages
+                List<Message> messages;
+                synchronized (socket.inQueue) {
+                  for (int i = 0; i < size; i++) {
+                    // Get the sequence
+                    Long seq = Long.parseLong(request.getParameter("s" + i));
+                    // Get the type
+                    MessageType type = MessageType.getFromTypeChar(request.getParameter("t" + i).charAt(0));
+                    // Get the message string
+                    String encodedMessage = request.getParameter("m" + i);
+                    // Decode and add
+                    if (socket.inQueue.put(seq, type.decode(encodedMessage, tempFileContext)) != null) {
+                      throw new IOException("Duplicate incoming sequence: " + seq);
                     }
-                  });
-                  tempFileContext = null; // Don't close now
+                  }
+                  // Gather as many messages that have been delivered in-order
+                  messages = new ArrayList<>(socket.inQueue.size());
+                  while (true) {
+                    Message message = socket.inQueue.remove(socket.inSeq);
+                    if (message != null) {
+                      messages.add(message);
+                      socket.inSeq++;
+                    } else {
+                      // Break in the sequence
+                      break;
+                    }
+                  }
                 }
-              }
-            } finally {
-              if (tempFileContext != null) {
-                try {
-                  tempFileContext.close();
-                } catch (ThreadDeath td) {
-                  throw td;
-                } catch (Throwable t) {
-                  logger.log(Level.WARNING, null, t);
+                if (!messages.isEmpty()) {
+                  final Future<?> future = socket.callOnMessages(Collections.unmodifiableList(messages));
+                  if (tempFileContext.getSize() != 0) {
+                    // Close temp file context, thus deleting temp files, once all messages have been handled
+                    final TempFileContext closeMeNow = tempFileContext;
+                    executors.getUnbounded().submit(() -> {
+                      try {
+                        try {
+                          // Wait until all messages handled
+                          future.get();
+                        } finally {
+                          try {
+                            // Delete temp files
+                            closeMeNow.close();
+                          } catch (ThreadDeath td) {
+                            throw td;
+                          } catch (Throwable t) {
+                            logger.log(Level.SEVERE, null, t);
+                          }
+                        }
+                      } catch (InterruptedException e) {
+                        logger.log(Level.FINE, null, e);
+                        // Restore the interrupted status
+                        Thread.currentThread().interrupt();
+                      } catch (ThreadDeath td) {
+                        throw td;
+                      } catch (Throwable t) {
+                        logger.log(Level.SEVERE, null, t);
+                      }
+                    });
+                    tempFileContext = null; // Don't close now
+                  }
+                }
+              } finally {
+                if (tempFileContext != null) {
+                  try {
+                    tempFileContext.close();
+                  } catch (ThreadDeath td) {
+                    throw td;
+                  } catch (Throwable t) {
+                    logger.log(Level.WARNING, null, t);
+                  }
                 }
               }
             }
-          }
-          // Handle outgoing messages
-          {
-            Map<Long, ? extends Message> outMessages = socket.getOutMessages();
-            // Build the response
-            AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
-            try {
-              try (Writer out = new OutputStreamWriter(bout, HttpSocket.ENCODING)) {
-                out.write("<?xml version=\"1.0\" encoding=\"");
-                out.write(HttpSocket.ENCODING.name());
-                out.write("\" standalone=\"yes\"?>\n"
-                    + "<messages>\n");
-                for (Map.Entry<Long, ? extends Message> entry : outMessages.entrySet()) {
-                  Long seq = entry.getKey();
-                  Message message = entry.getValue();
-                  out.write("  <message seq=\"");
-                  out.write(seq.toString());
-                  out.write("\" type=\"");
-                  out.write(message.getMessageType().getTypeChar());
-                  out.write("\">");
-                  textInXhtmlEncoder.write(message.encodeAsString(), out);
-                  out.write("</message>\n");
+            // Handle outgoing messages
+            {
+              Map<Long, ? extends Message> outMessages = socket.getOutMessages();
+              // Build the response
+              AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
+              try {
+                try (Writer out = new OutputStreamWriter(bout, HttpSocket.ENCODING)) {
+                  out.write("<?xml version=\"1.0\" encoding=\"");
+                  out.write(HttpSocket.ENCODING.name());
+                  out.write("\" standalone=\"yes\"?>\n"
+                      + "<messages>\n");
+                  for (Map.Entry<Long, ? extends Message> entry : outMessages.entrySet()) {
+                    Long seq = entry.getKey();
+                    Message message = entry.getValue();
+                    out.write("  <message seq=\"");
+                    out.write(seq.toString());
+                    out.write("\" type=\"");
+                    out.write(message.getMessageType().getTypeChar());
+                    out.write("\">");
+                    textInXhtmlEncoder.write(message.encodeAsString(), out);
+                    out.write("</message>\n");
+                  }
+                  out.write("</messages>");
                 }
-                out.write("</messages>");
+              } finally {
+                bout.close();
               }
-            } finally {
-              bout.close();
+              response.setContentType(ContentType.XML);
+              response.setCharacterEncoding(HttpSocket.ENCODING.name());
+              response.setContentLength(bout.size());
+              OutputStream out = response.getOutputStream();
+              try {
+                out.write(bout.getInternalByteArray(), 0, bout.size());
+              } finally {
+                out.close();
+              }
             }
-            response.setContentType(ContentType.XML);
-            response.setCharacterEncoding(HttpSocket.ENCODING.name());
-            response.setContentLength(bout.size());
-            OutputStream out = response.getOutputStream();
-            try {
-              out.write(bout.getInternalByteArray(), 0, bout.size());
-            } finally {
-              out.close();
-            }
-          }
         } catch (Throwable t0) {
           try {
             socket.callOnError(t0);
