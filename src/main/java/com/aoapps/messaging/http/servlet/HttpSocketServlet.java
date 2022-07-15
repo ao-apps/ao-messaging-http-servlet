@@ -30,6 +30,7 @@ import com.aoapps.lang.Throwables;
 import com.aoapps.lang.io.AoByteArrayOutputStream;
 import com.aoapps.lang.io.ContentType;
 import com.aoapps.lang.io.Encoder;
+import com.aoapps.lang.io.function.IOSupplier;
 import com.aoapps.messaging.Message;
 import com.aoapps.messaging.MessageType;
 import com.aoapps.messaging.Socket;
@@ -38,6 +39,7 @@ import com.aoapps.messaging.base.AbstractSocketContext;
 import com.aoapps.messaging.http.HttpSocket;
 import com.aoapps.security.Identifier;
 import com.aoapps.tempfiles.TempFileContext;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -53,8 +55,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -327,8 +331,28 @@ public abstract class HttpSocketServlet extends HttpServlet {
         try {
             // Handle incoming messages
             {
-              TempFileContext tempFileContext = new TempFileContext();
+              AtomicReference<TempFileContext> tempFileContextRef = new AtomicReference<>();
               try {
+                IOSupplier<TempFileContext> tempFileContextSupplier = () -> {
+                  TempFileContext tempFileContext = tempFileContextRef.get();
+                  if (tempFileContext == null) {
+                    tempFileContext = new TempFileContext(
+                        (File) getServletContext().getAttribute(ServletContext.TEMPDIR)
+                    );
+                    if (!tempFileContextRef.compareAndSet(null, tempFileContext)) {
+                      try {
+                        tempFileContext.close();
+                      } catch (ThreadDeath td) {
+                        throw td;
+                      } catch (Throwable t) {
+                        logger.log(Level.WARNING, null, t);
+                      }
+                      tempFileContext = tempFileContextRef.get();
+                      assert tempFileContext != null;
+                    }
+                  }
+                  return tempFileContext;
+                };
                 int size = Integer.parseInt(request.getParameter("l"));
                 logger.log(Level.FINEST, "size = ", size);
                 // Add all messages to the inQueue by sequence to handle out-of-order messages
@@ -342,7 +366,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
                     // Get the message string
                     String encodedMessage = request.getParameter("m" + i);
                     // Decode and add
-                    if (socket.inQueue.put(seq, type.decode(encodedMessage, tempFileContext)) != null) {
+                    if (socket.inQueue.put(seq, type.decode(encodedMessage, tempFileContextSupplier)) != null) {
                       throw new IOException("Duplicate incoming sequence: " + seq);
                     }
                   }
@@ -361,7 +385,8 @@ public abstract class HttpSocketServlet extends HttpServlet {
                 }
                 if (!messages.isEmpty()) {
                   final Future<?> future = socket.callOnMessages(Collections.unmodifiableList(messages));
-                  if (tempFileContext.getSize() != 0) {
+                  TempFileContext tempFileContext = tempFileContextRef.get();
+                  if (tempFileContext != null && tempFileContext.getSize() != 0) {
                     // Close temp file context, thus deleting temp files, once all messages have been handled
                     final TempFileContext closeMeNow = tempFileContext;
                     executors.getUnbounded().submit(() -> {
@@ -389,10 +414,11 @@ public abstract class HttpSocketServlet extends HttpServlet {
                         logger.log(Level.SEVERE, null, t);
                       }
                     });
-                    tempFileContext = null; // Don't close now
+                    tempFileContextRef.set(null);
                   }
                 }
               } finally {
+                TempFileContext tempFileContext = tempFileContextRef.get();
                 if (tempFileContext != null) {
                   try {
                     tempFileContext.close();
