@@ -46,10 +46,6 @@ along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses
 / <a target="${javadoc.target}" href="https://oss.aoapps.com/messaging/">Messaging</a>
 / <a target="${javadoc.target}" href="https://oss.aoapps.com/messaging/http/">HTTP</a>
 / <a target="${javadoc.target}" href="${project.url}">Servlet</a>]]></javadoc.breadcrumbs>
-    <!-- SonarQube -->
-    <sonar.projectKey>${project.groupId}:${project.artifactId}</sonar.projectKey>
-    <sonar.organization>ao-apps</sonar.organization>
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <!-- TODO: Implement tests -->
     <sonar.coverage.exclusions>**.*</sonar.coverage.exclusions>
   </properties>
