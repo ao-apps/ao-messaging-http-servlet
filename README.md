@@ -23,7 +23,7 @@ Servlet-based server for asynchronous bidirectional messaging over HTTP.
 * [Project Home](https://oss.aoapps.com/messaging/http/servlet/)
 * [Changelog](https://oss.aoapps.com/messaging/http/servlet/changelog)
 * [API Docs](https://oss.aoapps.com/messaging/http/servlet/apidocs/)
-* [Maven Central Repository](https://central.sonatype.com/search?namespace=com.aoapps&q=a%3Aao-messaging-http-servlet)
+* [Maven Central Repository](https://central.sonatype.com/artifact/com.aoapps/ao-messaging-http-servlet)
 * [GitHub](https://github.com/ao-apps/ao-messaging-http-servlet)
 
 ## Contact Us
