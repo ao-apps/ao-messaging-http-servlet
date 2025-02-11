@@ -1,6 +1,6 @@
 /*
  * ao-messaging-http-servlet - Servlet-based server for asynchronous bidirectional messaging over HTTP.
- * Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024  AO Industries, Inc.
+ * Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024, 2025  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -363,7 +363,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
                 synchronized (socket.inQueue) {
                   for (int i = 0; i < size; i++) {
                     // Get the sequence
-                    Long seq = Long.parseLong(request.getParameter("s" + i));
+                    Long seq = Long.valueOf(request.getParameter("s" + i));
                     // Get the type
                     MessageType type = MessageType.getFromTypeChar(request.getParameter("t" + i).charAt(0));
                     // Get the message string
