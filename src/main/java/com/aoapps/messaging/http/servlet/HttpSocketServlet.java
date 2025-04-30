@@ -332,144 +332,144 @@ public abstract class HttpSocketServlet extends HttpServlet {
         response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Socket id not found");
       } else {
         try {
-            // Handle incoming messages
-            {
-              AtomicReference<TempFileContext> tempFileContextRef = new AtomicReference<>();
-              try {
-                IOSupplier<TempFileContext> tempFileContextSupplier = () -> {
-                  TempFileContext tempFileContext = tempFileContextRef.get();
-                  if (tempFileContext == null) {
-                    tempFileContext = new TempFileContext(
-                        (File) getServletContext().getAttribute(ServletContext.TEMPDIR)
-                    );
-                    if (!tempFileContextRef.compareAndSet(null, tempFileContext)) {
-                      try {
-                        tempFileContext.close();
-                      } catch (ThreadDeath td) {
-                        throw td;
-                      } catch (Throwable t) {
-                        logger.log(Level.WARNING, null, t);
-                      }
-                      tempFileContext = tempFileContextRef.get();
-                      assert tempFileContext != null;
-                    }
-                  }
-                  return tempFileContext;
-                };
-                int size = Integer.parseInt(request.getParameter("l"));
-                logger.log(Level.FINEST, "size = ", size);
-                // Add all messages to the inQueue by sequence to handle out-of-order messages
-                List<Message> messages;
-                synchronized (socket.inQueue) {
-                  for (int i = 0; i < size; i++) {
-                    // Get the sequence
-                    Long seq = Long.valueOf(request.getParameter("s" + i));
-                    // Get the type
-                    MessageType type = MessageType.getFromTypeChar(request.getParameter("t" + i).charAt(0));
-                    // Get the message string
-                    String encodedMessage = request.getParameter("m" + i);
-                    // Decode and add
-                    if (socket.inQueue.put(seq, type.decode(encodedMessage, tempFileContextSupplier)) != null) {
-                      throw new IOException("Duplicate incoming sequence: " + seq);
-                    }
-                  }
-                  // Gather as many messages that have been delivered in-order
-                  messages = new ArrayList<>(socket.inQueue.size());
-                  while (true) {
-                    Message message = socket.inQueue.remove(socket.inSeq);
-                    if (message != null) {
-                      messages.add(message);
-                      socket.inSeq++;
-                    } else {
-                      // Break in the sequence
-                      break;
-                    }
-                  }
-                }
-                if (!messages.isEmpty()) {
-                  final Future<?> future = socket.callOnMessages(Collections.unmodifiableList(messages));
-                  TempFileContext tempFileContext = tempFileContextRef.get();
-                  if (tempFileContext != null && tempFileContext.getSize() != 0) {
-                    // Close temp file context, thus deleting temp files, once all messages have been handled
-                    final TempFileContext closeMeNow = tempFileContext;
-                    executors.getUnbounded().submit(() -> {
-                      try {
-                        try {
-                          // Wait until all messages handled
-                          future.get();
-                        } finally {
-                          try {
-                            // Delete temp files
-                            closeMeNow.close();
-                          } catch (ThreadDeath td) {
-                            throw td;
-                          } catch (Throwable t) {
-                            logger.log(Level.SEVERE, null, t);
-                          }
-                        }
-                      } catch (InterruptedException e) {
-                        logger.log(Level.FINE, null, e);
-                        // Restore the interrupted status
-                        Thread.currentThread().interrupt();
-                      } catch (ThreadDeath td) {
-                        throw td;
-                      } catch (Throwable t) {
-                        logger.log(Level.SEVERE, null, t);
-                      }
-                    });
-                    tempFileContextRef.set(null);
-                  }
-                }
-              } finally {
+          // Handle incoming messages
+          {
+            AtomicReference<TempFileContext> tempFileContextRef = new AtomicReference<>();
+            try {
+              IOSupplier<TempFileContext> tempFileContextSupplier = () -> {
                 TempFileContext tempFileContext = tempFileContextRef.get();
-                if (tempFileContext != null) {
-                  try {
-                    tempFileContext.close();
-                  } catch (ThreadDeath td) {
-                    throw td;
-                  } catch (Throwable t) {
-                    logger.log(Level.WARNING, null, t);
+                if (tempFileContext == null) {
+                  tempFileContext = new TempFileContext(
+                      (File) getServletContext().getAttribute(ServletContext.TEMPDIR)
+                  );
+                  if (!tempFileContextRef.compareAndSet(null, tempFileContext)) {
+                    try {
+                      tempFileContext.close();
+                    } catch (ThreadDeath td) {
+                      throw td;
+                    } catch (Throwable t) {
+                      logger.log(Level.WARNING, null, t);
+                    }
+                    tempFileContext = tempFileContextRef.get();
+                    assert tempFileContext != null;
+                  }
+                }
+                return tempFileContext;
+              };
+              int size = Integer.parseInt(request.getParameter("l"));
+              logger.log(Level.FINEST, "size = ", size);
+              // Add all messages to the inQueue by sequence to handle out-of-order messages
+              List<Message> messages;
+              synchronized (socket.inQueue) {
+                for (int i = 0; i < size; i++) {
+                  // Get the sequence
+                  Long seq = Long.valueOf(request.getParameter("s" + i));
+                  // Get the type
+                  MessageType type = MessageType.getFromTypeChar(request.getParameter("t" + i).charAt(0));
+                  // Get the message string
+                  String encodedMessage = request.getParameter("m" + i);
+                  // Decode and add
+                  if (socket.inQueue.put(seq, type.decode(encodedMessage, tempFileContextSupplier)) != null) {
+                    throw new IOException("Duplicate incoming sequence: " + seq);
+                  }
+                }
+                // Gather as many messages that have been delivered in-order
+                messages = new ArrayList<>(socket.inQueue.size());
+                while (true) {
+                  Message message = socket.inQueue.remove(socket.inSeq);
+                  if (message != null) {
+                    messages.add(message);
+                    socket.inSeq++;
+                  } else {
+                    // Break in the sequence
+                    break;
                   }
                 }
               }
-            }
-            // Handle outgoing messages
-            {
-              Map<Long, ? extends Message> outMessages = socket.getOutMessages();
-              // Build the response
-              AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
-              try {
-                try (Writer out = new OutputStreamWriter(bout, HttpSocket.ENCODING)) {
-                  out.write("<?xml version=\"1.0\" encoding=\"");
-                  out.write(HttpSocket.ENCODING.name());
-                  out.write("\" standalone=\"yes\"?>\n"
-                      + "<messages>\n");
-                  for (Map.Entry<Long, ? extends Message> entry : outMessages.entrySet()) {
-                    Long seq = entry.getKey();
-                    Message message = entry.getValue();
-                    out.write("  <message seq=\"");
-                    out.write(seq.toString());
-                    out.write("\" type=\"");
-                    out.write(message.getMessageType().getTypeChar());
-                    out.write("\">");
-                    textInXhtmlEncoder.write(message.encodeAsString(), out);
-                    out.write("</message>\n");
-                  }
-                  out.write("</messages>");
+              if (!messages.isEmpty()) {
+                final Future<?> future = socket.callOnMessages(Collections.unmodifiableList(messages));
+                TempFileContext tempFileContext = tempFileContextRef.get();
+                if (tempFileContext != null && tempFileContext.getSize() != 0) {
+                  // Close temp file context, thus deleting temp files, once all messages have been handled
+                  final TempFileContext closeMeNow = tempFileContext;
+                  executors.getUnbounded().submit(() -> {
+                    try {
+                      try {
+                        // Wait until all messages handled
+                        future.get();
+                      } finally {
+                        try {
+                          // Delete temp files
+                          closeMeNow.close();
+                        } catch (ThreadDeath td) {
+                          throw td;
+                        } catch (Throwable t) {
+                          logger.log(Level.SEVERE, null, t);
+                        }
+                      }
+                    } catch (InterruptedException e) {
+                      logger.log(Level.FINE, null, e);
+                      // Restore the interrupted status
+                      Thread.currentThread().interrupt();
+                    } catch (ThreadDeath td) {
+                      throw td;
+                    } catch (Throwable t) {
+                      logger.log(Level.SEVERE, null, t);
+                    }
+                  });
+                  tempFileContextRef.set(null);
                 }
-              } finally {
-                bout.close();
               }
-              response.setContentType(ContentType.XML);
-              response.setCharacterEncoding(HttpSocket.ENCODING.name());
-              response.setContentLength(bout.size());
-              OutputStream out = response.getOutputStream();
-              try {
-                out.write(bout.getInternalByteArray(), 0, bout.size());
-              } finally {
-                out.close();
+            } finally {
+              TempFileContext tempFileContext = tempFileContextRef.get();
+              if (tempFileContext != null) {
+                try {
+                  tempFileContext.close();
+                } catch (ThreadDeath td) {
+                  throw td;
+                } catch (Throwable t) {
+                  logger.log(Level.WARNING, null, t);
+                }
               }
             }
+          }
+          // Handle outgoing messages
+          {
+            Map<Long, ? extends Message> outMessages = socket.getOutMessages();
+            // Build the response
+            AoByteArrayOutputStream bout = new AoByteArrayOutputStream();
+            try {
+              try (Writer out = new OutputStreamWriter(bout, HttpSocket.ENCODING)) {
+                out.write("<?xml version=\"1.0\" encoding=\"");
+                out.write(HttpSocket.ENCODING.name());
+                out.write("\" standalone=\"yes\"?>\n"
+                    + "<messages>\n");
+                for (Map.Entry<Long, ? extends Message> entry : outMessages.entrySet()) {
+                  Long seq = entry.getKey();
+                  Message message = entry.getValue();
+                  out.write("  <message seq=\"");
+                  out.write(seq.toString());
+                  out.write("\" type=\"");
+                  out.write(message.getMessageType().getTypeChar());
+                  out.write("\">");
+                  textInXhtmlEncoder.write(message.encodeAsString(), out);
+                  out.write("</message>\n");
+                }
+                out.write("</messages>");
+              }
+            } finally {
+              bout.close();
+            }
+            response.setContentType(ContentType.XML);
+            response.setCharacterEncoding(HttpSocket.ENCODING.name());
+            response.setContentLength(bout.size());
+            OutputStream out = response.getOutputStream();
+            try {
+              out.write(bout.getInternalByteArray(), 0, bout.size());
+            } finally {
+              out.close();
+            }
+          }
         } catch (Throwable t0) {
           try {
             socket.callOnError(t0);
