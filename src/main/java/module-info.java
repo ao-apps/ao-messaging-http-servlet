@@ -1,6 +1,6 @@
 /*
  * ao-messaging-http-servlet - Servlet-based server for asynchronous bidirectional messaging over HTTP.
- * Copyright (C) 2021, 2022  AO Industries, Inc.
+ * Copyright (C) 2021, 2022, 2025, 2026  AO Industries, Inc.
  *     support@aoindustries.com
  *     7262 Bull Pen Cir
  *     Mobile, AL 36695
@@ -31,7 +31,7 @@ module com.aoapps.messaging.http.servlet {
   requires com.aoapps.messaging.http; // <groupId>com.aoapps</groupId><artifactId>ao-messaging-http</artifactId>
   requires com.aoapps.security; // <groupId>com.aoapps</groupId><artifactId>ao-security</artifactId>
   requires com.aoapps.tempfiles; // <groupId>com.aoapps</groupId><artifactId>ao-tempfiles</artifactId>
-  requires javax.servlet.api; // <groupId>javax.servlet</groupId><artifactId>javax.servlet-api</artifactId>
+  requires jakarta.servlet; // <groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId>
   // Java SE
   requires java.logging;
 }

@@ -41,6 +41,9 @@ along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses
 / <a target="${javadoc.target}" href="https://oss.aoapps.com/messaging/">Messaging</a>
 / <a target="${javadoc.target}" href="https://oss.aoapps.com/messaging/http/">HTTP</a>
 / <a target="${javadoc.target}" href="${project.url}">Servlet</a>]]></javadoc.breadcrumbs>
+    <!-- Jakarta EE 10 -->
+    <javaee.version>10</javaee.version>
+    <javadoc.link.javaee>${javadoc.link.jakartaee.10}</javadoc.link.javaee>
     <!-- TODO: Implement tests -->
     <sonar.coverage.exclusions>**.*</sonar.coverage.exclusions>
   </properties>
@@ -176,7 +179,7 @@ along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses
                       <includes>element-list, package-list</includes>
                       <outputDirectory>${project.build.directory}/offlineLinks/com.aoapps/ao-tempfiles</outputDirectory>
                     </artifactItem>
-                    <!-- ao-javadoc-offline: <groupId>javax.servlet</groupId><artifactId>javax.servlet-api</artifactId><classifier>javadoc</classifier> -->
+                    <!-- ao-javadoc-offline: <groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId><classifier>javadoc</classifier> -->
                   </artifactItems>
                 </configuration>
               </execution>
@@ -219,7 +222,7 @@ along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses
                   <url>https://oss.aoapps.com/tempfiles/apidocs/</url>
                   <location>${project.build.directory}/offlineLinks/com.aoapps/ao-tempfiles</location>
                 </offlineLink>
-                <!-- ao-javadoc-offline: <groupId>javax.servlet</groupId><artifactId>javax.servlet-api</artifactId><classifier>javadoc</classifier> -->
+                <!-- ao-javadoc-offline: <groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId><classifier>javadoc</classifier> -->
               </offlineLinks>
             </configuration>
           </plugin>
@@ -247,32 +250,6 @@ along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses
         <org.apache.maven.plugins.maven-javadoc-plugin.version>${org.apache.maven.plugins.maven-javadoc-plugin.version.compat}</org.apache.maven.plugins.maven-javadoc-plugin.version>
         <copy-element-list-to-package-list-before-javadoc.phase>prepare-package</copy-element-list-to-package-list-before-javadoc.phase>
       </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.felix</groupId><artifactId>maven-bundle-plugin</artifactId>
-            <configuration>
-              <instructions>
-                <!--
-                  Releases use "Automatic-Module-Name" instead of "module-info.java"
-                  since has direct dependencies that are not yet modularized:
-                  javax.servlet-api-3.1.0.jar
-                -->
-                <Automatic-Module-Name>${module.name}</Automatic-Module-Name>
-                <Private-Package>!.</Private-Package>
-              </instructions>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId>
-            <configuration>
-              <excludes>
-                <exclude>**/module-info.class</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 
@@ -303,7 +280,7 @@ along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses
       <dependency>
         <groupId>com.aoapps</groupId><artifactId>ao-tempfiles</artifactId><version>3.1.0-SNAPSHOT<!-- ${POST-SNAPSHOT} --></version>
       </dependency>
-      <!-- javaee-web-api-bom: <groupId>javax.servlet</groupId><artifactId>javax.servlet-api</artifactId> -->
+      <!-- jakartaee-web-profile-bom: <groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId> -->
       <!-- Transitive -->
       <dependency>
         <groupId>com.aoapps</groupId><artifactId>ao-hodgepodge</artifactId><version>5.3.0-SNAPSHOT<!-- ${POST-SNAPSHOT} --></version>
@@ -313,7 +290,7 @@ along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses
       </dependency>
       <!-- Imports -->
       <dependency>
-        <groupId>com.aoapps</groupId><artifactId>javaee-web-api-bom</artifactId><version>7.0.1-POST-SNAPSHOT</version>
+        <groupId>com.aoapps</groupId><artifactId>jakartaee-web-profile-bom</artifactId><version>10.0.0-SNAPSHOT<!-- ${POST-SNAPSHOT} --></version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -347,7 +324,7 @@ along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses
       <groupId>com.aoapps</groupId><artifactId>ao-tempfiles</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId><artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId>
     </dependency>
   </dependencies>
 </project>
