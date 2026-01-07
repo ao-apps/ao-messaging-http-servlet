@@ -4,7 +4,7 @@
 [![management: production](https://oss.aoapps.com/ao-badges/management-production.svg)](https://aoindustries.com/life-cycle#management-production)
 [![packaging: active](https://oss.aoapps.com/ao-badges/packaging-active.svg)](https://aoindustries.com/life-cycle#packaging-active)  
 [![java: &gt;= 11](https://oss.aoapps.com/ao-badges/java-11.svg)](https://docs.oracle.com/en/java/javase/11/docs/api/)
-[![java ee: &gt;= 7](https://oss.aoapps.com/ao-badges/javaee-7.svg)](https://docs.oracle.com/javaee/7/)
+[![jakarta ee: &gt;= 10](https://oss.aoapps.com/ao-badges/jakartaee-10.svg)](https://jakarta.ee/release/10/)
 [![semantic versioning: 2.0.0](https://oss.aoapps.com/ao-badges/semver-2.0.0.svg)](https://semver.org/spec/v2.0.0.html)
 [![license: LGPL v3](https://oss.aoapps.com/ao-badges/license-lgpl-3.0.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
