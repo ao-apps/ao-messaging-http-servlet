@@ -1,7 +1,7 @@
 # [<img src="ao-logo.png" alt="AO Logo" width="35" height="40">](https://github.com/ao-apps) [AO OSS](https://github.com/ao-apps/ao-oss) / [Messaging](https://github.com/ao-apps/ao-messaging) / [HTTP](https://github.com/ao-apps/ao-messaging-http) / [Servlet](https://github.com/ao-apps/ao-messaging-http-servlet)
 
-[![project: current stable](https://oss.aoapps.com/ao-badges/project-current-stable.svg)](https://aoindustries.com/life-cycle#project-current-stable)
-[![management: production](https://oss.aoapps.com/ao-badges/management-production.svg)](https://aoindustries.com/life-cycle#management-production)
+[![project: old stable](https://oss.aoapps.com/ao-badges/project-old-stable.svg)](https://aoindustries.com/life-cycle#project-old-stable)
+[![management: migration](https://oss.aoapps.com/ao-badges/management-migration.svg)](https://aoindustries.com/life-cycle#management-migration)
 [![packaging: active](https://oss.aoapps.com/ao-badges/packaging-active.svg)](https://aoindustries.com/life-cycle#packaging-active)  
 [![java: &gt;= 11](https://oss.aoapps.com/ao-badges/java-11.svg)](https://docs.oracle.com/en/java/javase/11/docs/api/)
 [![java ee: &gt;= 7](https://oss.aoapps.com/ao-badges/javaee-7.svg)](https://docs.oracle.com/javaee/7/)
