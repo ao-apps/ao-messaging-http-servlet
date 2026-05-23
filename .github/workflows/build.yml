@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - javaee
-  pull_request:
-    types: [opened, synchronize, reopened]
 jobs:
   build:
     name: Build
