@@ -154,7 +154,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
         } catch (ThreadDeath td) {
           throw td;
         } catch (Throwable t) {
-          logger.log(Level.SEVERE, null, t);
+          logger.log(Level.SEVERE, "TODO: message here", t);
         }
       } else {
         logger.log(Level.FINE, "No onStart: {0}", this);
@@ -348,7 +348,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
                     } catch (ThreadDeath td) {
                       throw td;
                     } catch (Throwable t) {
-                      logger.log(Level.WARNING, null, t);
+                      logger.log(Level.WARNING, "TODO: message here", t);
                     }
                     tempFileContext = tempFileContextRef.get();
                     assert tempFileContext != null;
@@ -404,17 +404,17 @@ public abstract class HttpSocketServlet extends HttpServlet {
                         } catch (ThreadDeath td) {
                           throw td;
                         } catch (Throwable t) {
-                          logger.log(Level.SEVERE, null, t);
+                          logger.log(Level.SEVERE, "TODO: message here", t);
                         }
                       }
                     } catch (InterruptedException e) {
-                      logger.log(Level.FINE, null, e);
+                      logger.log(Level.FINE, "TODO: message here", e);
                       // Restore the interrupted status
                       Thread.currentThread().interrupt();
                     } catch (ThreadDeath td) {
                       throw td;
                     } catch (Throwable t) {
-                      logger.log(Level.SEVERE, null, t);
+                      logger.log(Level.SEVERE, "TODO: message here", t);
                     }
                   });
                   tempFileContextRef.set(null);
@@ -428,7 +428,7 @@ public abstract class HttpSocketServlet extends HttpServlet {
                 } catch (ThreadDeath td) {
                   throw td;
                 } catch (Throwable t) {
-                  logger.log(Level.WARNING, null, t);
+                  logger.log(Level.WARNING, "TODO: message here", t);
                 }
               }
             }
