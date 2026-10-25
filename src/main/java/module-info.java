@@ -21,7 +21,6 @@
  * along with ao-messaging-http-servlet.  If not, see <https://www.gnu.org/licenses/>.
  */
 module com.aoapps.messaging.http.servlet {
-  exports com.aoapps.messaging.http.servlet;
   // Direct
   requires com.aoapps.collections; // <groupId>com.aoapps</groupId><artifactId>ao-collections</artifactId>
   requires com.aoapps.concurrent; // <groupId>com.aoapps</groupId><artifactId>ao-concurrent</artifactId>
@@ -34,4 +33,6 @@ module com.aoapps.messaging.http.servlet {
   requires jakarta.servlet; // <groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId>
   // Java SE
   requires java.logging;
+
+  exports com.aoapps.messaging.http.servlet;
 }
